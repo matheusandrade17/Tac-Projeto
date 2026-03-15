@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  aluno-service:
+    build: ./services/aluno-service
+    container_name: aluno-service-app
+    ports:
+      - "3000:8080"
+    restart: always
