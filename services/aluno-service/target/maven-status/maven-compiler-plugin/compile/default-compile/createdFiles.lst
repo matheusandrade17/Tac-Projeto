@@ -1,2 +1,3 @@
 com\gestao\academico\AlunoServiceApplication.class
-com\gestao\academico\interfaces\controllers\HealthCheckController.class
+com\gestao\academico\domain\entities\Aluno.class
+com\gestao\academico\interfaces\controllers\AlunoController.class

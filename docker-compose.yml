@@ -1,0 +1,7 @@
+services:
+  aluno-service:
+    build:
+      context: ./services/aluno-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
