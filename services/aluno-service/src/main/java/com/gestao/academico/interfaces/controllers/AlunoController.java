@@ -51,7 +51,7 @@ public class AlunoController {
         for (Aluno aluno : alunos) {
             if (aluno.getId().equals(id)) {
                 aluno.setNome(alunoAtualizado.getNome());
-                aluno.setMatricula(alunoAtualizado.getMatricula());
+                aluno.setEmail(alunoAtualizado.getEmail());
                 return ResponseEntity.noContent().build();
             }
         }
