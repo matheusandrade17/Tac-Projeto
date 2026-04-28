@@ -1,4 +1,5 @@
 Sistema de Gestão Acadêmica - Tac-Projeto
+
 Este repositório contém o microserviço aluno-service, responsável pelo gerenciamento de dados estudantis. O projeto foi desenvolvido com Spring Boot 3 e foca na separação de responsabilidades entre as camadas de domínio, serviços e interfaces de controle.
 
 Stack Tecnológica
@@ -14,6 +15,8 @@ Testes: JUnit 5, Mockito e AssertJ
 
 Cobertura de Código: JaCoCo Maven Plugin
 
+Documentação de API: SpringDoc OpenAPI (Swagger UI)
+
 Estrutura de Qualidade e QA
 A garantia de qualidade foi implementada através de testes unitários e de integração, utilizando mocks para isolamento de dependências e asserções fluentes para validação de regras de negócio.
 
@@ -23,8 +26,16 @@ Para validar as métricas de cobertura de código, execute o comando abaixo na p
 PowerShell
 cd services/aluno-service
 .\mvnw.cmd clean test
+
 Após a execução, o relatório detalhado em formato HTML será gerado no seguinte diretório:
 target/site/jacoco/index.html
+
+Documentação da API (Swagger UI)
+A API está documentada com OpenAPI 3.0 via SpringDoc. Após iniciar a aplicação, acesse:
+
+Swagger UI: http://localhost:8080/swagger-ui/index.html
+
+OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 Organização do Projeto
 services/aluno-service: Código fonte, configurações Maven e testes.
@@ -36,4 +47,4 @@ COBERTURA.md: Documentação técnica sobre as métricas de teste alcançadas.
 Responsabilidades Técnicas
 Desenvolvimento e Arquitetura: Implementação do núcleo do serviço e rotas da API.
 
-QA e Documentação: Configuração da infraestrutura de testes, implementação do plugin de cobertura JaCoCo e padronização da documentação técnica
+QA e Documentação: Configuração da infraestrutura de testes, implementação do plugin de cobertura JaCoCo, documentação Swagger/OpenAPI e padronização da documentação técnica.
