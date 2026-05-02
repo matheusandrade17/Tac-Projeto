@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  avaliacao-service:
+    build: .
+    container_name: avaliacao-service-app
+    ports:
+      - "8084:8080"
+    restart: always
