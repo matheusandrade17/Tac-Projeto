@@ -25,10 +25,12 @@ public class AlunoService {
         return alunoRepository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Aluno> buscarPorId(Long id) {
         return alunoRepository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void remover(Long id) {
         alunoRepository.deleteById(id);
     }

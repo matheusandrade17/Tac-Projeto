@@ -1,5 +1,6 @@
 package com.gestao.academico.domain.entities;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -8,6 +9,13 @@ public class MatriculaService {
 
     private final MatriculaRepository matriculaRepository;
     private final RestTemplate restTemplate;
+
+    @Value("${services.aluno.base-url}")
+    private String alunoBaseUrl;
+
+    @Value("${services.disciplina.base-url}")
+    private String disciplinaBaseUrl;
+
 
 
     public MatriculaService(MatriculaRepository matriculaRepository, RestTemplate restTemplate) {
@@ -24,16 +32,15 @@ public class MatriculaService {
         }
 
 
-        String urlAluno = "http://localhost:8081/api/v1/alunos/" + matricula.getAlunoId();
+        String urlAluno = alunoBaseUrl + "/" + matricula.getAlunoId();
+        String urlDisciplina = disciplinaBaseUrl + "/" + matricula.getDisciplinaId();
 
         try {
-
             restTemplate.getForEntity(urlAluno, Object.class);
+            restTemplate.getForEntity(urlDisciplina, Object.class);
         } catch (Exception e) {
-
-            throw new RuntimeException("Matrícula negada: Aluno não encontrado no sistema acadêmico.");
+            throw new RuntimeException("Matrícula negada: Aluno/Disciplina não encontrado no sistema acadêmico.");
         }
-
 
         return matriculaRepository.save(matricula);
     }

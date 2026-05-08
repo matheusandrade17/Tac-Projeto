@@ -24,6 +24,7 @@ class DisciplinaServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void deveSalvarDisciplinaComSucesso() {
         Disciplina disciplina = new Disciplina();
         disciplina.setNome("Cálculo I");

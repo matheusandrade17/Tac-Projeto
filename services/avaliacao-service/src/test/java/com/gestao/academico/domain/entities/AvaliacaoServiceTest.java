@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,10 +21,13 @@ class AvaliacaoServiceTest {
 
     @BeforeEach
     void setUp() {
-        avaliacaoService = new AvaliacaoService(avaliacaoRepository);
+        RestTemplate restTemplate = org.mockito.Mockito.mock(RestTemplate.class);
+        avaliacaoService = new AvaliacaoService(avaliacaoRepository, restTemplate);
     }
 
+
     @Test
+    @SuppressWarnings("null")
     void deveSalvarAvaliacaoComSucesso() {
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setAlunoId(1L);

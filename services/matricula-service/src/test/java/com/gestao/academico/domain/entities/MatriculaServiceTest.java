@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,14 +17,18 @@ class MatriculaServiceTest {
     @Mock
     private MatriculaRepository matriculaRepository;
 
+    @Mock
+    private RestTemplate restTemplate;
+
     private MatriculaService matriculaService;
 
     @BeforeEach
     void setUp() {
-        matriculaService = new MatriculaService(matriculaRepository);
+        matriculaService = new MatriculaService(matriculaRepository, restTemplate);
     }
 
     @Test
+    @SuppressWarnings("null")
     void deveSalvarMatriculaComSucesso() {
         Matricula matricula = new Matricula();
         matricula.setAlunoId(1L);
