@@ -33,6 +33,18 @@ services:
     networks:
       - tac-network
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=tac
+      - RABBITMQ_DEFAULT_PASS=tac
+    networks:
+      - tac-network
+
   gateway:
     build: ./services/gateway
     container_name: gateway
@@ -43,9 +55,11 @@ services:
       - disciplina-service
       - matricula-service
       - avaliacao-service
+      - rabbitmq
     networks:
       - tac-network
 
 networks:
   tac-network:
     driver: bridge
+

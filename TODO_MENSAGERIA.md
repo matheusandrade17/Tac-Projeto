@@ -1,0 +1,34 @@
+# TODO - Mensageria (RabbitMQ) - Tac-Projeto
+
+- [x] Atualizar `docker-compose.yml` para subir RabbitMQ na rede `tac-network` (feito)
+- [x] Adicionar dependência `spring-boot-starter-amqp` nos POMs dos serviços necessários
+      - [ ] aluno-service
+      - [ ] disciplina-service
+      - [ ] matricula-service
+      - [ ] avaliacao-service
+- [ ] Criar classes de evento (DTOs) em cada serviço (ou em pacote comum do serviço)
+      - [ ] AlunoCriadoEvent
+      - [ ] DisciplinaCriadaEvent
+      - [ ] MatriculaCriadaEvent (opcional, para completar o fluxo)
+      - [ ] AvaliacaoCriadaEvent (opcional, para completar o fluxo)
+- [ ] Implementar publisher no aluno-service e disciplina-service
+      - [ ] publicar evento no POST de aluno
+      - [ ] publicar evento no POST de disciplina
+- [ ] Implementar listener no matricula-service
+      - [ ] consumir AlunoCriadoEvent e DisciplinaCriadaEvent
+      - [ ] manter estado local de IDs válidos
+      - [ ] trocar validação síncrona por validação local
+- [ ] Implementar listener no avaliacao-service
+      - [ ] consumir AlunoCriadoEvent e DisciplinaCriadaEvent
+      - [ ] manter estado local de IDs válidos
+      - [ ] trocar validação síncrona por validação local
+- [ ] Atualizar application.properties com configuração do RabbitMQ
+- [ ] Rodar `docker compose up -d --build` e testar fluxo completo
+      - [ ] criar aluno
+      - [ ] criar disciplina
+      - [ ] criar matrícula (deve validar via eventos)
+      - [ ] criar avaliação (deve validar via eventos)
+- [ ] Testar cenários de erro
+      - [ ] matrícula com alunoId inexistente
+      - [ ] avaliação com disciplinaId inexistente
+

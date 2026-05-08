@@ -10,3 +10,5 @@ target/
 # IDE 
 .vscode/ 
 .idea/ 
+target/ 
+*.jar 

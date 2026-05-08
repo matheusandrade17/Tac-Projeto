@@ -1,11 +1,12 @@
 package com.gestao.academico.domain.entities;
 
+import com.gestao.academico.mensageria.listeners.ValidacaoListener;
+import com.gestao.academico.producer.MatriculaProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,13 +19,16 @@ class MatriculaServiceTest {
     private MatriculaRepository matriculaRepository;
 
     @Mock
-    private RestTemplate restTemplate;
+    private ValidacaoListener validacaoListener;
+
+    @Mock
+    private MatriculaProducer matriculaProducer;
 
     private MatriculaService matriculaService;
 
     @BeforeEach
     void setUp() {
-        matriculaService = new MatriculaService(matriculaRepository, restTemplate);
+        matriculaService = new MatriculaService(matriculaRepository, validacaoListener, matriculaProducer);
     }
 
     @Test
@@ -35,6 +39,8 @@ class MatriculaServiceTest {
         matricula.setDisciplinaId(1L);
         matricula.setStatus("ATIVA");
 
+        when(validacaoListener.isAlunoValido(1L)).thenReturn(true);
+        when(validacaoListener.isDisciplinaValida(1L)).thenReturn(true);
         when(matriculaRepository.save(any(Matricula.class))).thenReturn(matricula);
 
         Matricula resultado = matriculaService.salvar(matricula);
@@ -50,9 +56,7 @@ class MatriculaServiceTest {
         matricula.setAlunoId(null);
         matricula.setDisciplinaId(1L);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            matriculaService.salvar(matricula);
-        });
+        assertThrows(IllegalArgumentException.class, () -> matriculaService.salvar(matricula));
     }
 
     @Test
@@ -61,8 +65,7 @@ class MatriculaServiceTest {
         matricula.setAlunoId(1L);
         matricula.setDisciplinaId(null);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            matriculaService.salvar(matricula);
-        });
+        assertThrows(IllegalArgumentException.class, () -> matriculaService.salvar(matricula));
     }
 }
+

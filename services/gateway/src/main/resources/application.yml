@@ -2,22 +2,35 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: gateway
+
   cloud:
     gateway:
       routes:
         - id: aluno-service
-          uri: http://aluno-service:8081
+          uri: lb://aluno-service
           predicates:
             - Path=/api/v1/alunos/**
+
         - id: disciplina-service
-          uri: http://disciplina-service:8082
+          uri: lb://disciplina-service
           predicates:
             - Path=/api/v1/disciplinas/**
+
         - id: matricula-service
-          uri: http://matricula-service:8083
+          uri: lb://matricula-service
           predicates:
             - Path=/api/v1/matriculas/**
+
         - id: avaliacao-service
-          uri: http://avaliacao-service:8084
+          uri: lb://avaliacao-service
           predicates:
             - Path=/api/v1/avaliacoes/**
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
