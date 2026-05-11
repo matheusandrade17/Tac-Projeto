@@ -3,6 +3,7 @@
 # =========================
 target/
 **/target/
+!.mvn/wrapper/maven-wrapper.jar
 
 # =========================
 # Java
@@ -10,11 +11,21 @@ target/
 *.class
 *.jar
 *.war
+*.ear
 
 # =========================
 # Logs
 # =========================
 *.log
+logs/
+*.out
+
+# =========================
+# Spring Boot / env
+# =========================
+application-local.yml
+application-dev.yml
+.env
 
 # =========================
 # IDEs
@@ -28,3 +39,20 @@ target/
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Docker (opcional, evita lixo local)
+# =========================
+docker-data/
+*.pid
+
+# =========================
+# Coverage / testes
+# =========================
+coverage/
+*.exec
+
+# =========================
+# Maven wrapper (mantém necessário)
+# =========================
+.mvn/wrapper/maven-wrapper.jar

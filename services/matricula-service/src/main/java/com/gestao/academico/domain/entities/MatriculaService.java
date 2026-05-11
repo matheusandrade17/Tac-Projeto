@@ -3,6 +3,9 @@ package com.gestao.academico.domain.entities;
 import com.gestao.academico.event.MatriculaCriadaEvent;
 import com.gestao.academico.mensageria.listeners.ValidacaoListener;
 import com.gestao.academico.producer.MatriculaProducer;
+
+import dto.MatriculaDto;
+
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
@@ -38,6 +41,11 @@ public class MatriculaService {
         MatriculaCriadaEvent event = new MatriculaCriadaEvent(saved.getId(), saved.getAlunoId(), saved.getDisciplinaId().toString(), LocalDateTime.now());
         matriculaProducer.publicarMatriculaCriada(event);
         return saved;
+    }
+
+    public model.Matricula criarMatricula(MatriculaDto dto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'criarMatricula'");
     }
 }
 

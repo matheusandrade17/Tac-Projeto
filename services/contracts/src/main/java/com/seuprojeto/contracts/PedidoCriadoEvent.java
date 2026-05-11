@@ -5,8 +5,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record ItemDto(UUID produtoId, String nomeProduto, int quantidade, BigDecimal precoUnitario) {}
-
 public record PedidoCriadoEvent(
         UUID pedidoId,
         UUID clienteId,

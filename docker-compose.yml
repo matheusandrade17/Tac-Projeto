@@ -62,18 +62,18 @@ services:
     networks:
       - tac-network
 
-  notificacoes:
-    build: ./services/notificacoes
-    container_name: notificacoes
-    restart: unless-stopped
-    ports:
-      - "8085:8085"
-    depends_on:
-      - rabbitmq
-    environment:
-      - SPRING_RABBITMQ_HOST=rabbitmq
-    networks:
-      - tac-network
+#  notificacoes:
+#    build: ./services/notificacoes
+#    container_name: notificacoes
+#    restart: unless-stopped
+#    ports:
+#      - "8085:8085"
+#    depends_on:
+#      - rabbitmq
+#    environment:
+#      - SPRING_RABBITMQ_HOST=rabbitmq
+#    networks:
+#      - tac-network
 
   rabbitmq:
     image: rabbitmq:3-management

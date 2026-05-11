@@ -1,13 +1,13 @@
-package com.seuprojeto.matricula;
-
 import com.seuprojeto.contracts.PedidoCriadoEvent;
+import jakarta.annotation.PostConstruct;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.core.MessagePostProcessor;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.UUID;
 
 @Service
@@ -26,15 +26,21 @@ public class EventoPublisher {
     }
 
     public void publicar(PedidoCriadoEvent event) {
+
         String messageId = UUID.randomUUID().toString();
 
-        MessagePostProcessor mpp = msg -> {
-            MessageProperties props = msg.getMessageProperties();
-            props.setMessageId(messageId);
-            props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-            return msg;
+        MessagePostProcessor mpp = new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message msg) throws AmqpException {
+
+                MessageProperties props = msg.getMessageProperties();
+                props.setMessageId(messageId);
+                props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+                return msg;
+            }
         };
 
-        rabbitTemplate.convertAndSend(ROUTING_KEY, event, mpp);
+        rabbitTemplate.convertAndSend("", ROUTING_KEY, event, mpp);
     }
 }
