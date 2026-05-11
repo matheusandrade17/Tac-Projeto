@@ -1,0 +1,17 @@
+spring:
+  rabbitmq:
+    host: rabbitmq
+    username: guest
+    password: guest
+
+  datasource:
+    url: jdbc:h2:mem:notificacoes;DB_CLOSE_DELAY=-1
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+logging:
+  level:
+    root: INFO

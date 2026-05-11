@@ -4,50 +4,51 @@ services:
   aluno-service:
     build: ./services/aluno-service
     container_name: aluno-service
+    restart: unless-stopped
     ports:
       - "8081:8081"
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - tac-network
 
   disciplina-service:
     build: ./services/disciplina-service
     container_name: disciplina-service
+    restart: unless-stopped
     ports:
       - "8082:8082"
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - tac-network
 
   matricula-service:
     build: ./services/matricula-service
     container_name: matricula-service
+    restart: unless-stopped
     ports:
       - "8083:8083"
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - tac-network
 
   avaliacao-service:
     build: ./services/avaliacao-service
     container_name: avaliacao-service
+    restart: unless-stopped
     ports:
       - "8084:8084"
-    networks:
-      - tac-network
-
-  rabbitmq:
-    image: rabbitmq:3.13-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"      # AMQP
-      - "15672:15672"    # Management UI
     environment:
-      - RABBITMQ_DEFAULT_USER=tac
-      - RABBITMQ_DEFAULT_PASS=tac
+      - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - tac-network
 
   gateway:
     build: ./services/gateway
     container_name: gateway
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
@@ -56,10 +57,48 @@ services:
       - matricula-service
       - avaliacao-service
       - rabbitmq
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - tac-network
+
+  notificacoes:
+    build: ./services/notificacoes
+    container_name: notificacoes
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    depends_on:
+      - rabbitmq
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    networks:
+      - tac-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: tac_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - tac-network
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
 networks:
   tac-network:
     driver: bridge
 
+volumes:
+  rabbitmq_data:
+    driver: local
