@@ -4,12 +4,14 @@ server:
 spring:
   application:
     name: notificacoes
+
   rabbitmq:
-    host: rabbitmq
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASS:guest}
     port: 5672
     virtual-host: /
+
   datasource:
     url: jdbc:h2:mem:notificacoes;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
@@ -21,16 +23,19 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+
   jpa:
     hibernate:
       ddl-auto: none
+    show-sql: true
+
+
   flyway:
-    enabled: false
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    property-naming-strategy: SNAKE_CASE
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 logging:
   level:
     root: INFO
+    org.flywaydb: DEBUG
