@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -40,14 +41,24 @@ public class PedidoProjector {
         tx.execute(status -> {
             try {
                 PedidoCriadoEvent evt = objectMapper.readValue(payload, PedidoCriadoEvent.class);
+
+                // Remove previous projection for this pedido (makes projection idempotent)
+                jdbc.update("DELETE FROM itens_readmodel WHERE pedido_id = ?", evt.pedidoId().toString());
+                jdbc.update("DELETE FROM pedidos_readmodel WHERE pedido_id = ?", evt.pedidoId().toString());
+
+                // Insert pedido read model
                 jdbc.update("INSERT INTO pedidos_readmodel(pedido_id, cliente_id, nome_cliente, email_cliente, status, valor_total, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        evt.getPedidoId(), evt.getClienteId(), evt.getNomeCliente(), evt.getEmailCliente(), "CRIADO", evt.getValorTotal(), evt.getCriadoEm());
-                for (ItemDto item : evt.getItens()) {
+                        evt.pedidoId().toString(), evt.clienteId().toString(), evt.nomeCliente(), evt.emailCliente(), "CRIADO", evt.valorTotal(), evt.criadoEm());
+
+                // Insert items
+                for (ItemDto item : evt.itens()) {
                     jdbc.update("INSERT INTO itens_readmodel(pedido_id, nome_produto, quantidade, preco_unitario, subtotal) VALUES (?, ?, ?, ?, ?)",
-                            evt.getPedidoId(), item.getNomeProduto(), item.getQuantidade(), item.getPrecoUnitario(), item.getQuantidade().multiply(item.getPrecoUnitario()));
+                            evt.pedidoId().toString(), item.nomeProduto(), item.quantidade(), item.precoUnitario(), item.quantidade().multiply(item.precoUnitario()));
                 }
+
                 processedEvents.register(finalMsgId);
             } catch (Exception ex) {
+                logger.error("Erro ao projetar pedido: {}", ex.getMessage(), ex);
                 throw new RuntimeException(ex);
             }
             return null;
