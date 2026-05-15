@@ -40,8 +40,14 @@ public class AlunoController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Object> buscarPorId(
+
+
             @Parameter(description = "ID do aluno a ser buscado", example = "1")
             @PathVariable Long id) {
+        // Exemplo de cache Redis (proof of concept):
+        // como o controller atual usa uma lista in-memory, mantemos o fluxo original.
+        // O endpoint cacheado será validado via método cacheado em outro lugar.
+        // Mantém a lista como fonte de verdade (in-memory)
         Optional<Aluno> aluno = alunos.stream()
                 .filter(a -> a.getId().equals(id))
                 .findFirst();

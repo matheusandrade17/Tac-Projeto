@@ -38,6 +38,7 @@ public class AlunoService {
         return alunoRepository.findById(id);
     }
 
+
     @SuppressWarnings("null")
     public void remover(Long id) {
         alunoRepository.deleteById(id);

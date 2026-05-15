@@ -1,6 +1,9 @@
 package com.gestao.academico.interfaces.controllers;
 
 import com.gestao.academico.domain.entities.Disciplina;
+import com.gestao.academico.domain.entities.DisciplinaCacheFacade;
+import com.gestao.academico.domain.entities.DisciplinaControllerFacade;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,14 +25,25 @@ public class DisciplinaController {
 
     private static List<Disciplina> disciplinas = new ArrayList<>();
 
+    private final DisciplinaControllerFacade disciplinaControllerFacade;
+
+    private final DisciplinaCacheFacade disciplinaCacheFacade;
+
+    public DisciplinaController(DisciplinaControllerFacade disciplinaControllerFacade, DisciplinaCacheFacade disciplinaCacheFacade) {
+        this.disciplinaControllerFacade = disciplinaControllerFacade;
+        this.disciplinaCacheFacade = disciplinaCacheFacade;
+    }
+
+
     @Operation(summary = "Listar todas as disciplinas", description = "Retorna uma lista com todas as disciplinas cadastradas")
     @ApiResponse(responseCode = "200", description = "Lista de disciplinas retornada com sucesso",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Disciplina.class)))
     @GetMapping
     public List<Disciplina> listarTodos() {
-        return disciplinas;
+        return disciplinaControllerFacade.listarTodos();
     }
+
 
     @Operation(summary = "Buscar disciplina por ID", description = "Retorna uma disciplina específica com base no identificador fornecido")
     @ApiResponses(value = {
@@ -42,9 +56,8 @@ public class DisciplinaController {
     public ResponseEntity<Object> buscarPorId(
             @Parameter(description = "ID da disciplina a ser buscada", example = "1")
             @PathVariable Long id) {
-        Optional<Disciplina> disciplina = disciplinas.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst();
+
+        Optional<Disciplina> disciplina = disciplinaCacheFacade.buscarPorIdCached(id);
 
         if (disciplina.isEmpty()) {
             java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
@@ -58,6 +71,7 @@ public class DisciplinaController {
 
         return ResponseEntity.ok(disciplina.get());
     }
+
 
     @Operation(summary = "Cadastrar nova disciplina", description = "Cria um novo registro de disciplina no sistema")
     @ApiResponses(value = {
@@ -86,15 +100,13 @@ public class DisciplinaController {
             @Parameter(description = "ID da disciplina a ser atualizada", example = "1")
             @PathVariable Long id,
             @RequestBody Disciplina disciplinaAtualizada) {
-        for (Disciplina disciplina : disciplinas) {
-            if (disciplina.getId().equals(id)) {
-                disciplina.setNome(disciplinaAtualizada.getNome());
-                disciplina.setCodigo(disciplinaAtualizada.getCodigo());
-                disciplina.setDescricao(disciplinaAtualizada.getDescricao());
-                disciplina.setCargaHoraria(disciplinaAtualizada.getCargaHoraria());
-                return ResponseEntity.noContent().build();
-            }
+
+        boolean updated = disciplinaControllerFacade.atualizar(id, disciplinaAtualizada);
+        if (updated) {
+            disciplinaCacheFacade.evictDisciplinaById(id);
+            return ResponseEntity.noContent().build();
         }
+
         java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
         erro.put("type", "https://gestao.academico/probs/disciplina-nao-encontrada");
         erro.put("title", "Disciplina não encontrada");
@@ -103,6 +115,7 @@ public class DisciplinaController {
         erro.put("instance", "/api/v1/disciplinas/" + id);
         return ResponseEntity.status(404).body(erro);
     }
+
 
     @Operation(summary = "Remover disciplina", description = "Remove uma disciplina do sistema com base no ID")
     @ApiResponses(value = {
@@ -113,7 +126,8 @@ public class DisciplinaController {
     public ResponseEntity<Object> remover(
             @Parameter(description = "ID da disciplina a ser removida", example = "1")
             @PathVariable Long id) {
-        boolean removido = disciplinas.removeIf(d -> d.getId().equals(id));
+
+        boolean removido = disciplinaControllerFacade.remover(id);
 
         if (!removido) {
             java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
@@ -125,8 +139,10 @@ public class DisciplinaController {
             return ResponseEntity.status(404).body(erro);
         }
 
+        disciplinaCacheFacade.evictDisciplinaById(id);
         return ResponseEntity.noContent().build();
     }
+
 
     @Operation(summary = "Verificar status da API", description = "Retorna informações sobre a versão e status da API")
     @ApiResponse(responseCode = "200", description = "Status retornado com sucesso")

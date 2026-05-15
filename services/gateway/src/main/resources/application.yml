@@ -8,25 +8,34 @@ spring:
   cloud:
     gateway:
       routes:
+
         - id: aluno-service
-          uri: lb://aluno-service
+          uri: http://aluno-service:8081
           predicates:
             - Path=/api/v1/alunos/**
+          filters:
+            - RewritePath=/api/v1/alunos/(?<segment>.*), /api/v1/alunos/${segment}
 
         - id: disciplina-service
-          uri: lb://disciplina-service
+          uri: http://disciplina-service:8082
           predicates:
             - Path=/api/v1/disciplinas/**
+          filters:
+            - RewritePath=/api/v1/disciplinas/(?<segment>.*), /api/v1/disciplinas/${segment}
 
         - id: matricula-service
-          uri: lb://matricula-service
+          uri: http://matricula-service:8083
           predicates:
             - Path=/api/v1/matriculas/**
+          filters:
+            - RewritePath=/api/v1/matriculas/(?<segment>.*), /api/v1/matriculas/${segment}
 
         - id: avaliacao-service
-          uri: lb://avaliacao-service
+          uri: http://avaliacao-service:8084
           predicates:
             - Path=/api/v1/avaliacoes/**
+          filters:
+            - RewritePath=/api/v1/avaliacoes/(?<segment>.*), /api/v1/avaliacoes/${segment}
 
       globalcors:
         corsConfigurations:

@@ -24,7 +24,9 @@ services:
       - tac-network
 
   matricula-service:
-    build: ./services/matricula-service
+    build:
+      context: .
+      dockerfile: services/matricula-service/Dockerfile
     container_name: matricula-service
     restart: unless-stopped
     ports:
@@ -75,9 +77,21 @@ services:
     networks:
       - tac-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: tac_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - tac-network
+    volumes:
+      - redis_data:/data
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: tac_rabbitmq
+
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: guest
@@ -102,3 +116,6 @@ networks:
 volumes:
   rabbitmq_data:
     driver: local
+  redis_data:
+    driver: local
+
