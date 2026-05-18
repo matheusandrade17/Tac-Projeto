@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"/><title>WS Client</title></head><body>
+<h3>WS Test</h3><div id="log"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@6.3.3/umd/stomp.min.js"></script>
+<script>
+    function log(m){document.getElementById('log').innerHTML += '<div>'+m+'</div>';}
+    const client = Stomp.over(new SockJS('/ws')); client.debug = null;
+    client.connect({}, ()=>{ log('Conectado'); client.subscribe('/topic/public', m=>log(m.body)); client.send('/app/chat.send',{},JSON.stringify({type:'JOIN',sender:'tester',content:'oi'})); }, e=>log('Erro:'+e));
+</script></body></html>
