@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'tac-services'
+    metrics_path: /actuator/prometheus
+    scheme: http
+    static_configs:
+      - targets:
+          - 'aluno-service:8081'
+          - 'disciplina-service:8082'
+          - 'matricula-service:8083'
+          - 'avaliacao-service:8084'
+          - 'gateway:8080'
+          - 'notificacoes:8081'
+
