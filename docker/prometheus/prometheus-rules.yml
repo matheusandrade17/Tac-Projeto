@@ -1,0 +1,58 @@
+groups:
+  - name: tac-alerts
+    rules:
+      - alert: InstanceDown
+        expr: up{job=~"tac-services"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down: {{ $labels.instance }}"
+          description: "O serviço {{ $labels.instance }} está fora do ar (up == 0 por 30s)."
+
+      - alert: HttpErrorRateHigh
+        expr: (
+          sum by (instance) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          /
+          sum by (instance) (rate(http_server_requests_seconds_count[5m]))
+        ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Taxa de erro HTTP alta (>5%): {{ $labels.instance }}"
+          description: "A taxa de respostas 5xx ultrapassou 5% no período de 5m para {{ $labels.instance }}."
+
+      - alert: SlowRequestsP95
+        expr: histogram_quantile(0.95, sum by (le, instance) (rate(http_server_requests_seconds_bucket[5m]))) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência P95 alta (>500ms): {{ $labels.instance }}"
+          description: "O P95 de latência das requisições HTTP excedeu 500ms por 2m em {{ $labels.instance }}."
+
+      - alert: JvmHeapMemoryHigh
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Heap memory acima de 80%: {{ $labels.instance }}"
+          description: "Uso de heap acima de 80% por 5m em {{ $labels.instance }}."
+
+      - alert: CacheFailureRateHigh
+        expr: (
+          sum by (instance) (rate(cache_failures_total[5m]))
+        )
+        /
+        (
+          sum by (instance) (rate(matriculas_total{resultado=~".+"}[5m]))
+          + 1
+        ) > 0.2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Taxa de falhas de cache alta (>20%): {{ $labels.instance }}"
+          description: "A taxa de falhas de cache ultrapassou 20% no período de 5m para {{ $labels.instance }}."
