@@ -1,0 +1,50 @@
+resilience4j:
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+        enable-exponential-backoff: true
+        retry-exceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+    instances:
+      pagamentos:
+        base-config: default
+
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+    instances:
+      pagamentos:
+        base-config: default
+
+  timelimiter:
+    configs:
+      default:
+        cancel-running-future: true
+        timeout-duration: 3s
+    instances:
+      pagamentos:
+        base-config: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+services:
+  pagamentos:
+    base-url: http://pagamentos/api/v1/pagamentos
+
+http:
+  client:
+    connect-timeout: 2s
+    read-timeout: 2s
