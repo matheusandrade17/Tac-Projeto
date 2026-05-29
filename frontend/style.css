@@ -1,0 +1,75 @@
+body {
+
+    background: linear-gradient(to right, #eef2f3, #dfe9f3);
+
+    min-height: 100vh;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+
+.titulo {
+
+    font-size: 2.5rem;
+
+    font-weight: bold;
+
+    color: #1e293b;
+
+}
+
+.subtitulo {
+
+    color: #64748b;
+
+    font-size: 1.2rem;
+
+}
+
+.sistema-card {
+
+    border: none;
+
+    border-radius: 15px;
+
+    transition: 0.3s;
+
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+
+}
+
+.sistema-card:hover {
+
+    transform: translateY(-8px);
+
+}
+
+.card-title {
+
+    font-weight: bold;
+
+    margin-bottom: 15px;
+
+}
+
+.card-text {
+
+    color: #555;
+
+    min-height: 50px;
+
+}
+
+.btn {
+
+    border-radius: 10px;
+
+    font-weight: bold;
+
+}
+
+.row {
+
+    justify-content: center;
+
+}
