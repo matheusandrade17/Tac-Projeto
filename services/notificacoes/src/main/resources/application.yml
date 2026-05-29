@@ -39,6 +39,8 @@ logging:
   level:
     root: INFO
     org.flywaydb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} traceId=%X{traceId:-} spanId=%X{spanId:-} - %msg%n"
 
 # Observabilidade (Actuator + Prometheus + Tracing Brave)
 management:
@@ -57,8 +59,4 @@ management:
     enabled: true
     sampling:
       probability: 1.0
-
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} traceId=%X{traceId:-} spanId=%X{spanId:-} - %msg%n"
 

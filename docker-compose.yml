@@ -9,6 +9,11 @@ services:
       - "8081:8081"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
+    depends_on:
+      - rabbitmq
+      - postgres
     networks:
       - tac-network
 
@@ -20,6 +25,10 @@ services:
       - "8082:8082"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
+    depends_on:
+      - rabbitmq
     networks:
       - tac-network
 
@@ -33,6 +42,11 @@ services:
       - "8083:8083"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
+    depends_on:
+      - rabbitmq
+      - postgres
     networks:
       - tac-network
 
@@ -44,6 +58,10 @@ services:
       - "8084:8084"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
+    depends_on:
+      - rabbitmq
     networks:
       - tac-network
 
@@ -61,11 +79,15 @@ services:
       - rabbitmq
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
     networks:
       - tac-network
 
   notificacoes:
-    build: ./services/notificacoes
+    build:
+      context: .
+      dockerfile: services/notificacoes/Dockerfile
     container_name: notificacoes
     restart: unless-stopped
     ports:
@@ -74,9 +96,11 @@ services:
       - rabbitmq
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=tac
+      - RABBITMQ_PASS=tac
     networks:
       - tac-network
-
+    
   redis:
     image: redis:7-alpine
     container_name: tac_redis
@@ -93,8 +117,8 @@ services:
     container_name: tac_rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: tac
+      RABBITMQ_DEFAULT_PASS: tac
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -116,6 +140,27 @@ services:
       - "9090:9090"
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - tac-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: tac_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: tac
+      POSTGRES_PASSWORD: tac
+      POSTGRES_DB: tac_aluno
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tac"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - tac-network
 
@@ -187,4 +232,6 @@ volumes:
   rabbitmq_data:
     driver: local
   redis_data:
+    driver: local
+  postgres_data:
     driver: local

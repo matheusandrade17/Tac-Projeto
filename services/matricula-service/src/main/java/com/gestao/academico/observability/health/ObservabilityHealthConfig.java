@@ -12,16 +12,16 @@ public class ObservabilityHealthConfig {
 
     @Bean
     public HealthIndicator postgresHealthIndicator(JdbcTemplate jdbcTemplate) {
-        return new PostgresHealthIndicator(jdbcTemplate, "postgres");
+        return new PostgresHealthIndicator(jdbcTemplate, 0, "postgres");
     }
 
     @Bean
     public HealthIndicator redisHealthIndicator(RedisConnectionFactory redisConnectionFactory) {
-        return new RedisHealthIndicator(redisConnectionFactory, "redis");
+        return new RedisHealthIndicator(redisConnectionFactory, 0, "redis");
     }
 
     @Bean
     public HealthIndicator rabbitmqHealthIndicator(ConnectionFactory connectionFactory) {
-        return new RabbitMQHealthIndicator(connectionFactory, "rabbitmq");
+        return new RabbitMQHealthIndicator(connectionFactory, 0, "rabbitmq");
     }
 }

@@ -53,7 +53,7 @@ public class PedidoProjector {
                 // Insert items
                 for (ItemDto item : evt.itens()) {
                     jdbc.update("INSERT INTO itens_readmodel(pedido_id, nome_produto, quantidade, preco_unitario, subtotal) VALUES (?, ?, ?, ?, ?)",
-                            evt.pedidoId().toString(), item.nomeProduto(), item.quantidade(), item.precoUnitario(), item.quantidade().multiply(item.precoUnitario()));
+                            evt.pedidoId().toString(), item.nomeProduto(), item.quantidade(), item.precoUnitario(), java.math.BigDecimal.valueOf(item.quantidade()).multiply(item.precoUnitario()));
                 }
 
                 processedEvents.register(finalMsgId);
