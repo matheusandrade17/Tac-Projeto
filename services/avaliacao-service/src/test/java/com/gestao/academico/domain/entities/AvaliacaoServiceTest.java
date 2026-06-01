@@ -1,6 +1,7 @@
 package com.gestao.academico.domain.entities;
 
-import com.gestao.academico.mensageria.listeners.ValidacaoListener;
+import com.gestao.academico.integration.AlunoClient;
+import com.gestao.academico.integration.DisciplinaClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
+import java.util.concurrent.CompletableFuture;
 
 @ExtendWith(MockitoExtension.class)
 class AvaliacaoServiceTest {
@@ -19,31 +20,34 @@ class AvaliacaoServiceTest {
     private AvaliacaoRepository avaliacaoRepository;
 
     @Mock
-    private ValidacaoListener validacaoListener;
+    private AlunoClient alunoClient;
+
+    @Mock
+    private DisciplinaClient disciplinaClient;
 
     private AvaliacaoService avaliacaoService;
 
     @BeforeEach
     void setUp() {
         avaliacaoService =
-                new AvaliacaoService(avaliacaoRepository, validacaoListener);
+                new AvaliacaoService(avaliacaoRepository, alunoClient, disciplinaClient);
     }
 
     @Test
     @SuppressWarnings("null")
     void deveSalvarAvaliacaoComSucesso() {
 
-        when(validacaoListener.alunoExiste(anyLong()))
-                .thenReturn(true);
-
-        when(validacaoListener.disciplinaExiste(anyLong()))
-                .thenReturn(true);
-
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setAlunoId(1L);
         avaliacao.setDisciplinaId(1L);
         avaliacao.setTipo("PROVA");
         avaliacao.setNota(85.5);
+
+        when(alunoClient.alunoExiste(1L))
+                .thenReturn(CompletableFuture.completedFuture(true));
+
+        when(disciplinaClient.disciplinaExiste(1L))
+                .thenReturn(CompletableFuture.completedFuture(true));
 
         when(avaliacaoRepository.save(any(Avaliacao.class)))
                 .thenReturn(avaliacao);
@@ -55,6 +59,21 @@ class AvaliacaoServiceTest {
 
         verify(avaliacaoRepository, times(1))
                 .save(avaliacao);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoDisciplinaNaoExistir() {
+        Avaliacao avaliacao = new Avaliacao();
+        avaliacao.setAlunoId(1L);
+        avaliacao.setDisciplinaId(99L);
+
+        when(alunoClient.alunoExiste(1L))
+                .thenReturn(CompletableFuture.completedFuture(true));
+        when(disciplinaClient.disciplinaExiste(99L))
+                .thenReturn(CompletableFuture.completedFuture(false));
+
+        assertThrows(RuntimeException.class, () -> avaliacaoService.salvar(avaliacao));
+        verify(avaliacaoRepository, never()).save(any());
     }
 
     @Test

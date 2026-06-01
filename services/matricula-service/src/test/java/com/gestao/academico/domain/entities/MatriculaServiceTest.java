@@ -1,6 +1,7 @@
 package com.gestao.academico.domain.entities;
 
-import com.gestao.academico.mensageria.listeners.ValidacaoListener;
+import com.gestao.academico.integration.AlunoClient;
+import com.gestao.academico.integration.DisciplinaClient;
 import com.gestao.academico.producer.MatriculaProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import java.util.concurrent.CompletableFuture;
 
 @ExtendWith(MockitoExtension.class)
 class MatriculaServiceTest {
@@ -19,7 +21,10 @@ class MatriculaServiceTest {
     private MatriculaRepository matriculaRepository;
 
     @Mock
-    private ValidacaoListener validacaoListener;
+    private AlunoClient alunoClient;
+
+    @Mock
+    private DisciplinaClient disciplinaClient;
 
     @Mock
     private MatriculaProducer matriculaProducer;
@@ -28,7 +33,7 @@ class MatriculaServiceTest {
 
     @BeforeEach
     void setUp() {
-        matriculaService = new MatriculaService(matriculaRepository, validacaoListener, matriculaProducer);
+        matriculaService = new MatriculaService(matriculaRepository, alunoClient, disciplinaClient, matriculaProducer);
     }
 
     @Test
@@ -39,8 +44,8 @@ class MatriculaServiceTest {
         matricula.setDisciplinaId(1L);
         matricula.setStatus("ATIVA");
 
-        when(validacaoListener.isAlunoValido(1L)).thenReturn(true);
-        when(validacaoListener.isDisciplinaValida(1L)).thenReturn(true);
+        when(alunoClient.alunoExiste(1L)).thenReturn(CompletableFuture.completedFuture(true));
+        when(disciplinaClient.disciplinaExiste(1L)).thenReturn(CompletableFuture.completedFuture(true));
         when(matriculaRepository.save(any(Matricula.class))).thenReturn(matricula);
 
         Matricula resultado = matriculaService.salvar(matricula);
@@ -48,6 +53,18 @@ class MatriculaServiceTest {
         assertNotNull(resultado);
         assertEquals(1L, resultado.getAlunoId());
         verify(matriculaRepository, times(1)).save(matricula);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoAlunoNaoExistir() {
+        Matricula matricula = new Matricula();
+        matricula.setAlunoId(99L);
+        matricula.setDisciplinaId(1L);
+
+        when(alunoClient.alunoExiste(99L)).thenReturn(CompletableFuture.completedFuture(false));
+
+        assertThrows(RuntimeException.class, () -> matriculaService.salvar(matricula));
+        verify(matriculaRepository, never()).save(any());
     }
 
     @Test

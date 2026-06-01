@@ -3,7 +3,8 @@ package com.gestao.academico;
 import com.gestao.academico.domain.entities.Matricula;
 import com.gestao.academico.domain.entities.MatriculaService;
 import com.gestao.academico.event.MatriculaCriadaEvent;
-import com.gestao.academico.mensageria.listeners.ValidacaoListener;
+import com.gestao.academico.integration.AlunoClient;
+import com.gestao.academico.integration.DisciplinaClient;
 import com.gestao.academico.producer.MatriculaProducer;
 import com.gestao.academico.domain.entities.MatriculaRepository;
 import dto.MatriculaDto;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,7 +31,10 @@ class MatriculaServiceTest {
     MatriculaRepository matriculaRepository;
 
     @Mock
-    ValidacaoListener validacaoListener;
+    AlunoClient alunoClient;
+
+    @Mock
+    DisciplinaClient disciplinaClient;
 
     @Mock
     MatriculaProducer matriculaProducer;
@@ -58,8 +63,8 @@ class MatriculaServiceTest {
         saved.setDataMatricula(matricula.getDataMatricula());
         saved.setStatus("ATIVA");
 
-        when(validacaoListener.isAlunoValido(1L)).thenReturn(true);
-        when(validacaoListener.isDisciplinaValida(2L)).thenReturn(true);
+        when(alunoClient.alunoExiste(1L)).thenReturn(CompletableFuture.completedFuture(true));
+        when(disciplinaClient.disciplinaExiste(2L)).thenReturn(CompletableFuture.completedFuture(true));
         when(matriculaRepository.save(any(Matricula.class))).thenReturn(saved);
 
         // Act
@@ -82,7 +87,7 @@ class MatriculaServiceTest {
         dto.setAlunoId("999");
         dto.setDisciplinaId("2");
 
-        when(validacaoListener.isAlunoValido(999L)).thenReturn(false);
+        when(alunoClient.alunoExiste(999L)).thenReturn(CompletableFuture.completedFuture(false));
 
         // Act / Assert
         com.gestao.academico.domain.entities.Matricula m = new com.gestao.academico.domain.entities.Matricula();
@@ -106,8 +111,8 @@ class MatriculaServiceTest {
         dto.setAlunoId("1");
         dto.setDisciplinaId("999");
 
-        when(validacaoListener.isAlunoValido(1L)).thenReturn(true);
-        when(validacaoListener.isDisciplinaValida(999L)).thenReturn(false);
+        when(alunoClient.alunoExiste(1L)).thenReturn(CompletableFuture.completedFuture(true));
+        when(disciplinaClient.disciplinaExiste(999L)).thenReturn(CompletableFuture.completedFuture(false));
 
         // Act / Assert
         com.gestao.academico.domain.entities.Matricula m = new com.gestao.academico.domain.entities.Matricula();
@@ -161,8 +166,8 @@ class MatriculaServiceTest {
         saved.setStatus("ATIVA");
         saved.setDataMatricula(matricula.getDataMatricula());
 
-        when(validacaoListener.isAlunoValido(1L)).thenReturn(true);
-        when(validacaoListener.isDisciplinaValida(2L)).thenReturn(true);
+        when(alunoClient.alunoExiste(1L)).thenReturn(CompletableFuture.completedFuture(true));
+        when(disciplinaClient.disciplinaExiste(2L)).thenReturn(CompletableFuture.completedFuture(true));
         when(matriculaRepository.save(any(Matricula.class))).thenReturn(saved);
 
         // Act

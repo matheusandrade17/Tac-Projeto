@@ -32,14 +32,5 @@ public class ValidacaoListener {
         return disciplinaId != null && disciplinasValidas.contains(disciplinaId);
     }
 
-    public Object alunoExiste(long anyLong) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'alunoExiste'");
-    }
-
-    public Object disciplinaExiste(long anyLong) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'disciplinaExiste'");
-    }
 }
 

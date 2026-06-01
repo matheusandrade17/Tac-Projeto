@@ -8,21 +8,65 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  setup:
+  quality:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     steps:
-      - name: Checkout do código
+      - name: Checkout do codigo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+          cache: maven
 
-      - name: Verificar ambiente
+      - name: Validar configuracao do SonarCloud
         run: |
-          java -version
-          echo "GitHub Actions configurado com sucesso!"
+          test -n "$SONAR_TOKEN" || (echo "SONAR_TOKEN nao configurado nos secrets do repositorio." && exit 1)
+          test -n "$SONAR_ORGANIZATION" || (echo "SONAR_ORGANIZATION nao configurado nos secrets do repositorio." && exit 1)
+          test -n "$SONAR_PROJECT_KEY" || (echo "SONAR_PROJECT_KEY nao configurado nos secrets do repositorio." && exit 1)
+
+      - name: Instalar contratos compartilhados
+        run: mvn -B -f services/contracts/pom.xml clean install -DskipTests
+
+      - name: Testes e cobertura - aluno-service
+        run: mvn -B -f services/aluno-service/pom.xml clean verify
+
+      - name: Testes e cobertura - disciplina-service
+        run: mvn -B -f services/disciplina-service/pom.xml clean verify
+
+      - name: Testes e cobertura - matricula-service
+        run: mvn -B -f services/matricula-service/pom.xml clean verify
+
+      - name: Testes e cobertura - avaliacao-service
+        run: mvn -B -f services/avaliacao-service/pom.xml clean verify
+
+      - name: Build e cobertura - gateway
+        run: mvn -B -f services/gateway/pom.xml clean verify
+
+      - name: Build e cobertura - notificacoes
+        run: mvn -B -f services/notificacoes/pom.xml clean verify
+
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.qualitygate.wait=true

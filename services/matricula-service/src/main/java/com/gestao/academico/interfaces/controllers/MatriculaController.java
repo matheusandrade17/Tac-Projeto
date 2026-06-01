@@ -1,6 +1,8 @@
 package com.gestao.academico.interfaces.controllers;
 
 import com.gestao.academico.domain.entities.Matricula;
+import com.gestao.academico.domain.entities.MatriculaRepository;
+import com.gestao.academico.domain.entities.MatriculaService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,10 +21,12 @@ import java.util.Optional;
 @Tag(name = "Matrículas", description = "Endpoints para gerenciamento de matrículas")
 public class MatriculaController {
 
-    private final com.gestao.academico.domain.entities.MatriculaRepository matriculaRepository;
+    private final MatriculaRepository matriculaRepository;
+    private final MatriculaService matriculaService;
 
-    public MatriculaController(com.gestao.academico.domain.entities.MatriculaRepository matriculaRepository) {
+    public MatriculaController(MatriculaRepository matriculaRepository, MatriculaService matriculaService) {
         this.matriculaRepository = matriculaRepository;
+        this.matriculaService = matriculaService;
     }
 
 
@@ -74,7 +77,7 @@ public class MatriculaController {
     @PostMapping
     public ResponseEntity<Matricula> cadastrar(@RequestBody Matricula novaMatricula) {
         novaMatricula.setId(null);
-        Matricula saved = matriculaRepository.save(novaMatricula);
+        Matricula saved = matriculaService.salvar(novaMatricula);
         return ResponseEntity.status(201).body(saved);
     }
 
