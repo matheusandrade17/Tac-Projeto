@@ -11,15 +11,15 @@ import com.gestao.academico.config.CacheNames;
 @Service
 public class MatriculaCacheFacade {
 
-    private final MatriculaControllerFacade matriculaControllerFacade;
+    private final MatriculaRepository matriculaRepository;
 
-    public MatriculaCacheFacade(MatriculaControllerFacade matriculaControllerFacade) {
-        this.matriculaControllerFacade = matriculaControllerFacade;
+    public MatriculaCacheFacade(MatriculaRepository matriculaRepository) {
+        this.matriculaRepository = matriculaRepository;
     }
 
     @Cacheable(cacheNames = CacheNames.MATRICULAS_POR_ID, key = "#id")
     public Optional<Matricula> buscarPorIdCached(Long id) {
-        return matriculaControllerFacade.buscarPorId(id);
+        return matriculaRepository.findById(id);
     }
 
     @CacheEvict(cacheNames = CacheNames.MATRICULAS_POR_ID, key = "#id")
@@ -32,4 +32,5 @@ public class MatriculaCacheFacade {
         // vazio de propósito: anotação faz a invalidação
     }
 }
+
 

@@ -1,26 +1,12 @@
-# Observabilidade - TODO
+# TODO - Stabilização Tac-Projeto (matricula-service)
 
-- [ ] Atualizar POMs (Actuator + Micrometer Prometheus + Brave tracing) nos serviços:
-  - [x] aluno-service
-  - [ ] disciplina-service
-  - [ ] matricula-service
-  - [ ] avaliacao-service
-  - [ ] gateway
-  - [ ] notificacoes
+## Pendências (prioridade alta)
+- [ ] (3) Persistência real: remover listas estáticas/in-memory e unificar controller/service para usar exclusivamente MatriculaRepository (JPA/Postgres).
+- [ ] (5) Testcontainers: estabilizar MatriculaIntegrationTest garantindo que Spring ignore RabbitMQ/observabilidade quando roda em testes.
 
-
-
-
-- [ ] Atualizar configurações por serviço (Actuator/Prometheus/Tracing/MDC) em `application.yml`/`application.properties`.
-  - [ ] aluno-service
-  - [ ] disciplina-service
-  - [ ] matricula-service
-  - [ ] avaliacao-service
-  - [ ] gateway
-  - [ ] notificacoes
-- [ ] Atualizar `docker-compose.yml` para incluir Prometheus (9090) e Grafana (3000) + mounts.
-- [x] Criar `docker/prometheus/prometheus.yml`.
-- [x] Criar `docker/grafana/datasources/*` e `docker/grafana/dashboards/*` (incluindo README placeholder).
-
-- [ ] Build & validação via Docker Compose.
+## Já feito
+- [x] (1) services/contracts/pom.xml: Java 21 -> 17
+- [x] (2) frontend/js/*: substituir base URL para http://localhost:8080/api/v1/
+- [x] (4) MatriculaServiceTest com Mockito + AssertJ
+- [x] (5) MatriculaIntegrationTest criada/ajustada (falha atual por Docker/observability)
 

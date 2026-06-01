@@ -1,4 +1,4 @@
-const API = "http://localhost:8080/disciplinas";
+const API = "http://localhost:8080/api/v1/disciplinas"
 
 async function cadastrarDisciplina() {
 

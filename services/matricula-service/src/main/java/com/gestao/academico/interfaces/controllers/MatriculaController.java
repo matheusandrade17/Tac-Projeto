@@ -1,7 +1,7 @@
 package com.gestao.academico.interfaces.controllers;
 
 import com.gestao.academico.domain.entities.Matricula;
-import com.gestao.academico.domain.entities.MatriculaCacheFacade;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,13 +20,12 @@ import java.util.Optional;
 @Tag(name = "Matrículas", description = "Endpoints para gerenciamento de matrículas")
 public class MatriculaController {
 
-    private static final List<Matricula> matriculas = new ArrayList<>();
+    private final com.gestao.academico.domain.entities.MatriculaRepository matriculaRepository;
 
-    private final MatriculaCacheFacade matriculaCacheFacade;
-
-    public MatriculaController(MatriculaCacheFacade matriculaCacheFacade) {
-        this.matriculaCacheFacade = matriculaCacheFacade;
+    public MatriculaController(com.gestao.academico.domain.entities.MatriculaRepository matriculaRepository) {
+        this.matriculaRepository = matriculaRepository;
     }
+
 
     @Operation(summary = "Listar todas as matrículas", description = "Retorna uma lista com todas as matrículas cadastradas")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de matrículas retornada com sucesso",
@@ -34,8 +33,9 @@ public class MatriculaController {
                     schema = @Schema(implementation = Matricula.class)))
     @GetMapping
     public List<Matricula> listarTodos() {
-        return matriculas;
+        return matriculaRepository.findAll();
     }
+
 
     @Operation(summary = "Buscar matrícula por ID", description = "Retorna uma matrícula específica com base no identificador fornecido")
     @ApiResponses(value = {
@@ -49,7 +49,7 @@ public class MatriculaController {
             @Parameter(description = "ID da matrícula a ser buscada", example = "1")
             @PathVariable Long id) {
 
-        Optional<Matricula> matricula = matriculaCacheFacade.buscarPorIdCached(id);
+        Optional<Matricula> matricula = matriculaRepository.findById(id);
 
         if (matricula.isEmpty()) {
             java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
@@ -64,6 +64,7 @@ public class MatriculaController {
         return ResponseEntity.ok(matricula.get());
     }
 
+
     @Operation(summary = "Cadastrar nova matrícula", description = "Cria um novo registro de matrícula no sistema")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Matrícula criada com sucesso",
@@ -72,18 +73,11 @@ public class MatriculaController {
     })
     @PostMapping
     public ResponseEntity<Matricula> cadastrar(@RequestBody Matricula novaMatricula) {
-        long novoId = matriculas.stream()
-                .mapToLong(Matricula::getId)
-                .max()
-                .orElse(0) + 1;
-        novaMatricula.setId(novoId);
-        matriculas.add(novaMatricula);
-
-        // Consistência: ao criar, invalida cache de matrículas (simples e seguro)
-        matriculaCacheFacade.evictAllMatriculas();
-
-        return ResponseEntity.status(201).body(novaMatricula);
+        novaMatricula.setId(null);
+        Matricula saved = matriculaRepository.save(novaMatricula);
+        return ResponseEntity.status(201).body(saved);
     }
+
 
     @Operation(summary = "Atualizar matrícula", description = "Atualiza os dados de uma matrícula existente")
     @ApiResponses(value = {
@@ -96,28 +90,27 @@ public class MatriculaController {
             @PathVariable Long id,
             @RequestBody Matricula matriculaAtualizada) {
 
-        for (Matricula matricula : matriculas) {
-            if (matricula.getId().equals(id)) {
-                matricula.setAlunoId(matriculaAtualizada.getAlunoId());
-                matricula.setDisciplinaId(matriculaAtualizada.getDisciplinaId());
-                matricula.setDataMatricula(matriculaAtualizada.getDataMatricula());
-                matricula.setStatus(matriculaAtualizada.getStatus());
-
-                // Invalida cache do item atualizado
-                matriculaCacheFacade.evictMatriculaById(id);
-
-                return ResponseEntity.noContent().build();
-            }
+        Optional<Matricula> existente = matriculaRepository.findById(id);
+        if (existente.isEmpty()) {
+            java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
+            erro.put("type", "https://gestao.academico/probs/matricula-nao-encontrada");
+            erro.put("title", "Matrícula não encontrada");
+            erro.put("status", 404);
+            erro.put("detail", "Não existe matrícula com id " + id);
+            erro.put("instance", "/api/v1/matriculas/" + id);
+            return ResponseEntity.status(404).body(erro);
         }
 
-        java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
-        erro.put("type", "https://gestao.academico/probs/matricula-nao-encontrada");
-        erro.put("title", "Matrícula não encontrada");
-        erro.put("status", 404);
-        erro.put("detail", "Não existe matrícula com id " + id);
-        erro.put("instance", "/api/v1/matriculas/" + id);
-        return ResponseEntity.status(404).body(erro);
+        Matricula matricula = existente.get();
+        matricula.setAlunoId(matriculaAtualizada.getAlunoId());
+        matricula.setDisciplinaId(matriculaAtualizada.getDisciplinaId());
+        matricula.setDataMatricula(matriculaAtualizada.getDataMatricula());
+        matricula.setStatus(matriculaAtualizada.getStatus());
+        matriculaRepository.save(matricula);
+
+        return ResponseEntity.noContent().build();
     }
+
 
     @Operation(summary = "Remover matrícula", description = "Remove uma matrícula do sistema com base no ID")
     @ApiResponses(value = {
@@ -129,9 +122,8 @@ public class MatriculaController {
             @Parameter(description = "ID da matrícula a ser removida", example = "1")
             @PathVariable Long id) {
 
-        boolean removido = matriculas.removeIf(m -> m.getId().equals(id));
-
-        if (!removido) {
+        Optional<Matricula> existente = matriculaRepository.findById(id);
+        if (existente.isEmpty()) {
             java.util.Map<String, Object> erro = new java.util.LinkedHashMap<>();
             erro.put("type", "https://gestao.academico/probs/matricula-nao-encontrada");
             erro.put("title", "Matrícula não encontrada");
@@ -141,11 +133,10 @@ public class MatriculaController {
             return ResponseEntity.status(404).body(erro);
         }
 
-        // Invalida cache do item removido
-        matriculaCacheFacade.evictMatriculaById(id);
-
+        matriculaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
 
     @Operation(summary = "Verificar status da API", description = "Retorna informações sobre a versão e status da API")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Status retornado com sucesso")

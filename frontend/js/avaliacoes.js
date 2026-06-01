@@ -1,4 +1,4 @@
-const API = "http://localhost:8080/avaliacoes";
+const API = "http://localhost:8080/api/v1/avaliacoes"
 
 async function registrarAvaliacao() {
 
