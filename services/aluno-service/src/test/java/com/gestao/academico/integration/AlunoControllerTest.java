@@ -5,37 +5,33 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static io.restassured.RestAssured.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AlunoControllerTest{
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+public class AlunoControllerTest {
 
-    @LocalServerPort
-    private int port;
+    @Autowired
+    private MockMvc mockMvc;
 
     @MockBean
     private AlunoProducer alunoProducer;
 
-    @BeforeEach
-    public void setup() {
-        RestAssured.port = port;
-        RestAssured.basePath = "/api/v1/alunos"; // Ajuste para o caminho do seu Controller
-    }
-
     @Test
-    void deveRetornarStatus201_QuandoCadastrarAlunoValido() {
+    void deveRetornarStatus201_QuandoCadastrarAlunoValido() throws Exception {
         String jsonAluno = "{ \"nome\": \"Bruno Sena\", \"email\": \"bruno@email.com\" }";
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(jsonAluno)
-                .when()
-                .post()
-                .then()
-                .statusCode(201); // Verifica se criou com sucesso
+        mockMvc.perform(post("/api/v1/alunos")
+                .contentType(ContentType.JSON.toString())
+                .content(jsonAluno))
+                .andExpect(status().isCreated());
     }
 }
