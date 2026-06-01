@@ -1,5 +1,6 @@
 package com.gestao.academico.domain.entities;
 
+import com.gestao.academico.producer.AlunoProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,9 @@ class AlunoServiceTest {
 
     @Mock
     private AlunoRepository alunoRepository;
+
+    @Mock
+    private AlunoProducer alunoProducer;
 
     @InjectMocks
     private AlunoService alunoService;
