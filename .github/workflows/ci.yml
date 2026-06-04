@@ -52,8 +52,21 @@ jobs:
       - name: Instalar contratos compartilhados
         run: mvn -B -f services/contracts/pom.xml clean install -DskipTests
 
+      - name: Wait for Redis (127.0.0.1:6379)
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z 127.0.0.1 6379; then
+              echo "Redis is up"
+              exit 0
+            fi
+            echo "Waiting for Redis... ($i/30)"
+            sleep 1
+          done
+          echo "Redis did not start in time"
+          exit 1
+
       - name: Testes e cobertura - aluno-service
-        run: mvn -B -f services/aluno-service/pom.xml clean verify -Dspring.redis.host=localhost -Dspring.redis.port=6379
+        run: mvn -B -f services/aluno-service/pom.xml clean verify -Dspring.redis.host=127.0.0.1 -Dspring.redis.port=6379
 
       - name: Testes e cobertura - disciplina-service
         run: mvn -B -f services/disciplina-service/pom.xml clean verify
