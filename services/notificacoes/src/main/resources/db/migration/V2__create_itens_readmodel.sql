@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS itens_readmodel (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   pedido_id VARCHAR(36) NOT NULL,
   nome_produto VARCHAR(255),
   quantidade INT,

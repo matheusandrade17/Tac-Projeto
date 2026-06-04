@@ -13,10 +13,10 @@ spring:
     virtual-host: /
 
   datasource:
-    url: jdbc:h2:mem:notificacoes;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://postgres:5432/tac_notificacoes
+    driver-class-name: org.postgresql.Driver
+    username: tac
+    password: tac
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
@@ -27,13 +27,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
 
 
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+
 
 logging:
   level:
