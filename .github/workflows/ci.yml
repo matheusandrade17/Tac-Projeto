@@ -94,4 +94,6 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.qualitygate.wait=true
             -Dsonar.scanner.useJava=true
-            -Dsonar.exclusions=**/target/**,**/.idea/**,**/.git/**,docker/**,docs/**,**/src/test/resources/**/*
+            -Dsonar.sources=services/aluno-service/src/main/java,services/disciplina-service/src/main/java,services/matricula-service/src/main/java,services/avaliacao-service/src/main/java,services/gateway/src/main/java,services/notificacoes/src/main/java
+            -Dsonar.tests=services/aluno-service/src/test/java,services/disciplina-service/src/test/java,services/matricula-service/src/test/java,services/avaliacao-service/src/test/java
+            -Dsonar.exclusions=**/target/**,**/.idea/**,**/.git/**,docker/**,docs/**,**/src/test/resources/**,**/src/test/java/**
