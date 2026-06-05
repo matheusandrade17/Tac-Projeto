@@ -93,3 +93,5 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.qualitygate.wait=true
+            -Dsonar.scanner.useJava=true
+            -Dsonar.exclusions=**/target/**,**/.idea/**,**/.git/**,docker/**,docs/**,**/src/test/resources/**/*
