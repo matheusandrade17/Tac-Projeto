@@ -24,46 +24,37 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout do codigo
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Configurar Java 21
+      - name: Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
 
-      # ✅ CORREÇÃO 1: Validação agora também imprime o formato esperado do projectKey
-      - name: Validar configuracao do SonarCloud
+      - name: Validar secrets
         run: |
-          test -n "${{ secrets.SONAR_TOKEN }}" \
-            || (echo "::error::SONAR_TOKEN nao configurado" && exit 1)
-          test -n "${{ secrets.SONAR_ORGANIZATION }}" \
-            || (echo "::error::SONAR_ORGANIZATION nao configurado" && exit 1)
-          test -n "${{ secrets.SONAR_PROJECT_KEY }}" \
-            || (echo "::error::SONAR_PROJECT_KEY nao configurado" && exit 1)
-          echo "Org: ${{ secrets.SONAR_ORGANIZATION }}"
-          echo "Key: ${{ secrets.SONAR_PROJECT_KEY }}"
+          test -n "${{ secrets.SONAR_TOKEN }}"        || (echo "::error::SONAR_TOKEN ausente"        && exit 1)
+          test -n "${{ secrets.SONAR_ORGANIZATION }}" || (echo "::error::SONAR_ORGANIZATION ausente" && exit 1)
+          test -n "${{ secrets.SONAR_PROJECT_KEY }}"  || (echo "::error::SONAR_PROJECT_KEY ausente"  && exit 1)
 
-      - name: Instalar contratos compartilhados
+      - name: Instalar contracts
         run: mvn -B -f services/contracts/pom.xml clean install -DskipTests
 
       - name: Wait for Redis
         run: |
           for i in $(seq 1 30); do
-            nc -z 127.0.0.1 6379 && echo "Redis is up" && exit 0
-            echo "Waiting... ($i/30)" && sleep 1
+            nc -z 127.0.0.1 6379 && echo "Redis up" && exit 0
+            echo "Aguardando Redis... ($i/30)" && sleep 1
           done
-          echo "::error::Redis nao iniciou a tempo" && exit 1
+          echo "::error::Redis nao subiu" && exit 1
 
       - name: Testes - aluno-service
-        run: |
-          mvn -B -f services/aluno-service/pom.xml clean verify \
-            -Dspring.redis.host=127.0.0.1 \
-            -Dspring.redis.port=6379
+        run: mvn -B -f services/aluno-service/pom.xml clean verify -Dspring.redis.host=127.0.0.1 -Dspring.redis.port=6379
 
       - name: Testes - disciplina-service
         run: mvn -B -f services/disciplina-service/pom.xml clean verify
@@ -80,60 +71,29 @@ jobs:
       - name: Build - notificacoes
         run: mvn -B -f services/notificacoes/pom.xml clean verify
 
-      # ✅ CORREÇÃO 2: sonar.properties em arquivo dedicado evita problemas
-      #    de escaping/expansão do YAML folded scalar
-      - name: Criar sonar-project.properties
+      - name: Gerar sonar-project.properties
         run: |
-          cat > sonar-project.properties << 'EOF'
+          cat > sonar-project.properties << EOF
           sonar.host.url=https://sonarcloud.io
+          sonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+          sonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
           sonar.qualitygate.wait=true
 
-          # Estrutura multi-módulo
-          sonar.sources=\
-            services/aluno-service/src/main/java,\
-            services/disciplina-service/src/main/java,\
-            services/matricula-service/src/main/java,\
-            services/avaliacao-service/src/main/java,\
-            services/gateway/src/main/java,\
-            services/notificacoes/src/main/java
+          sonar.sources=services/aluno-service/src/main/java,services/disciplina-service/src/main/java,services/matricula-service/src/main/java,services/avaliacao-service/src/main/java,services/gateway/src/main/java,services/notificacoes/src/main/java
 
-          sonar.tests=\
-            services/aluno-service/src/test/java,\
-            services/disciplina-service/src/test/java,\
-            services/matricula-service/src/test/java,\
-            services/avaliacao-service/src/test/java
+          sonar.tests=services/aluno-service/src/test/java,services/disciplina-service/src/test/java,services/matricula-service/src/test/java,services/avaliacao-service/src/test/java
 
-          sonar.exclusions=\
-            **/target/**,\
-            **/.idea/**,\
-            **/.git/**,\
-            docker/**,\
-            docs/**,\
-            **/src/test/resources/**
+          sonar.java.binaries=services/aluno-service/target/classes,services/disciplina-service/target/classes,services/matricula-service/target/classes,services/avaliacao-service/target/classes,services/gateway/target/classes,services/notificacoes/target/classes
 
-          # Jacoco: agrega todos os relatórios de cobertura
-          sonar.coverage.jacoco.xmlReportPaths=\
-            services/aluno-service/target/site/jacoco/jacoco.xml,\
-            services/disciplina-service/target/site/jacoco/jacoco.xml,\
-            services/matricula-service/target/site/jacoco/jacoco.xml,\
-            services/avaliacao-service/target/site/jacoco/jacoco.xml
+          sonar.java.test.binaries=services/aluno-service/target/test-classes,services/disciplina-service/target/test-classes,services/matricula-service/target/test-classes,services/avaliacao-service/target/test-classes
+
+          sonar.coverage.jacoco.xmlReportPaths=services/aluno-service/target/site/jacoco/jacoco.xml,services/disciplina-service/target/site/jacoco/jacoco.xml,services/matricula-service/target/site/jacoco/jacoco.xml,services/avaliacao-service/target/site/jacoco/jacoco.xml
+
+          sonar.exclusions=**/target/**,**/.idea/**,**/.git/**,docker/**,docs/**,**/src/test/resources/**
           EOF
 
-          # Injeta as secrets em runtime (nunca hardcode no arquivo)
-          echo "sonar.organization=${{ secrets.SONAR_ORGANIZATION }}" >> sonar-project.properties
-          echo "sonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}" >> sonar-project.properties
-
-      # ✅ CORREÇÃO 3: env vars canônicas que o scanner CLI respeita nativamente
-      #    SONAR_SCANNER_OPTS apenas para forçar JVM local (sem conflito)
-      - name: SonarCloud Quality Gate
+      - name: SonarCloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_SCANNER_OPTS: >-
-            -Dsonar.scanner.skipJreProvisioning=true
-            -Dsonar.scanner.javaExePath=${{ env.JAVA_HOME }}/bin/java
-        with:
-          projectBaseDir: .
-          # args mínimo: tudo crítico já está no .properties
-          args: >-
-            -Dsonar.verbose=true
+          SONAR_SCANNER_OPTS: "-Dsonar.scanner.skipJreProvisioning=true"
