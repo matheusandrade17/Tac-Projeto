@@ -1,81 +1,36 @@
 const API = "http://localhost:8080/api/v1/alunos"
 
 async function listarAlunos() {
-
-    try {
-
-        const response = await fetch(API);
-
-        const alunos = await response.json();
-
-        const lista = document.getElementById("lista");
-
-        lista.innerHTML = "";
-
-        alunos.forEach(aluno => {
-
-            lista.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-
-                    ${aluno.nome}
-
-                    <span class="badge bg-primary">
-                        ID: ${aluno.id}
-                    </span>
-
-                </li>
-            `;
-        });
-
-    } catch (erro) {
-
-        console.error(erro);
-
-        alert("Erro ao carregar alunos.");
-
-    }
-
+    // Endpoint de listagem não implementado no backend
+    // Lista fica vazia por padrão
+    document.getElementById("lista").innerHTML = 
+        '<li class="list-group-item text-muted">Use o campo abaixo para cadastrar alunos.</li>';
 }
 
 async function cadastrarAluno() {
+    const nome = document.getElementById("nome").value;
+    const email = document.getElementById("email") ? 
+        document.getElementById("email").value : nome.toLowerCase().replace(" ","") + "@academico.com";
+
+    if (nome.trim() === "") { alert("Digite um nome."); return; }
 
     try {
-
-        const nome = document.getElementById("nome").value;
-
-        if(nome.trim() === "") {
-
-            alert("Digite um nome.");
-
-            return;
-        }
-
-        await fetch(API, {
-
+        const response = await fetch(API, {
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                nome: nome
-            })
-
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome: nome, email: email })
         });
 
-        document.getElementById("nome").value = "";
-
-        listarAlunos();
-
+        if (response.ok) {
+            const aluno = await response.json();
+            alert("Aluno cadastrado! ID: " + aluno.id);
+            document.getElementById("nome").value = "";
+        } else {
+            alert("Erro ao cadastrar: " + response.status);
+        }
     } catch (erro) {
-
-        console.error(erro);
-
-        alert("Erro ao cadastrar aluno.");
-
+        alert("Erro de conexão com o servidor.");
     }
-
 }
 
 listarAlunos();
