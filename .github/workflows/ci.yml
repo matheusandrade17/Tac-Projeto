@@ -84,7 +84,7 @@ jobs:
         run: mvn -B -f services/notificacoes/pom.xml clean verify
 
       - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
